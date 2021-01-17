@@ -1,5 +1,4 @@
 import { i18n, localeProjectInfo } from './i18n/config';
-
 import manifest from './manifest/config.json';
 
 const headLinks = [
@@ -50,10 +49,10 @@ export default {
   head: {
     titleTemplate: `%s - ${localeProjectInfo.projectName}`,
     title: localeProjectInfo.loading,
-    htmlAttrs: {
-      dir: localeProjectInfo.dir,
-      lang: localeProjectInfo.lang,
-    },
+    // htmlAttrs: {
+    //   dir: localeProjectInfo.dir,
+    //   lang: localeProjectInfo.lang,
+    // },
     meta: [
       { charset: 'utf-8' },
       {
@@ -79,7 +78,7 @@ export default {
   css: ['@aasaam/noto-font/dist/font-face.css', '~/assets/styles/main.scss'],
 
   // Plugins to run before rendering page (https://go.nuxtjs.dev/config-plugins)
-  plugins: [{ src: '~/plugins/aaa.js' }, { src: '~/plugins/vuex-persist.js' }],
+  plugins: [{ src: '~/plugins/vuex-persist.js' }],
 
   // Auto import components (https://go.nuxtjs.dev/config-components)
   components: true,
@@ -94,7 +93,7 @@ export default {
       ? process.env.ASM_BUILD_NUXT_LOADING_FAILED_COLOR
       : '#ff9800',
     height: '8px',
-    rtl: localeProjectInfo.dir === 'rtl',
+    // rtl: localeProjectInfo.dir === 'rtl',
   },
 
   // Modules for dev and build (recommended) (https://go.nuxtjs.dev/config-modules)

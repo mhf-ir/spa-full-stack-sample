@@ -7,6 +7,7 @@ export default function ({ app, store }) {
       iconfont: 'mdi',
     },
     rtl: app.$config.dir === 'rtl',
+
     theme: {
       dark: false,
     },
