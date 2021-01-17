@@ -1,0 +1,4 @@
+app/frontend/app.html
+app/frontend/.nuxt/
+app/frontend/node_modules/
+app/frontend/dist/

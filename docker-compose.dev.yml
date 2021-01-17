@@ -1,0 +1,26 @@
+# Copyright(c) 2021 aasaam software development group
+version: "3"
+
+services:
+  rename-me-app:
+    container_name: rename-me-app-${ASM_PUBLIC_APP_NS:-default}
+    image: node:15-stretch-slim
+    restart: always
+    volumes:
+      - ./app:/app
+    environment:
+      ASM_PUBLIC_APP_NS: ${ASM_PUBLIC_APP_NS:-default}
+      ASM_PUBLIC_APP_TEST__TO_BOOLEAN_CAST: ${ASM_PUBLIC_APP_TEST__TO_BOOLEAN_CAST:-""}
+      ASM_PUBLIC_APP_READ_ONLY__TO_BOOLEAN_CAST: ${ASM_PUBLIC_APP_READ_ONLY__TO_BOOLEAN_CAST:-""}
+
+      ASM_PUBLIC_APP_NS: ${APP_PORT:-9000}
+      ASM_APP_TEST_BOOLEAN: 1
+    command: tail -f /dev/null
+
+  rename-me-nginx:
+    container_name: rename-me-nginx-${ASM_PUBLIC_APP_NS:-default}
+    image: nginx:1
+    volumes:
+      - ./nginx/templates:/etc/nginx/templates:ro
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./nginx/mime.types:/etc/nginx/mime.types:ro
