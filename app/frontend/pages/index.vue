@@ -16,7 +16,7 @@
             :dense="true"
           />
         </div>
-        <hr />
+
         <div class="ma-4">
           date2: {{ selectDate2 }}
           <br />
@@ -26,12 +26,13 @@
             placeholder="انتخاب زمان"
           />
         </div>
-        <hr />
+
         <div class="ma-4">
           date3:
           <br />
           <pre>{{ selectDate3 }}</pre>
           <DateTimePicker
+            :dark="true"
             :date-time.sync="selectDate3"
             :lang="selectLang"
             format="EEEE d MMMM YYYY HH:mm"
