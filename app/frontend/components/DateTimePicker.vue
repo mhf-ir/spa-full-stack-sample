@@ -1,9 +1,24 @@
 <template>
   <div>
-    {{ getDate }}
-    <!-- <pre dir="ltr"> {{ dialogDetail.generatedTable }}</pre> -->
+    <v-snackbar v-model="snackbar" multi-line>
+      <span>
+        مینیموم تاریخ و ساعت باید
+        <span dir="ltr">
+          {{ min }}
+        </span>
+
+        باشد
+      </span>
+
+      <template v-slot:action="{ attrs }">
+        <v-btn color="red" text v-bind="attrs" @click="snackbar = false">
+          بستن
+        </v-btn>
+      </template>
+    </v-snackbar>
     <v-text-field
       v-model="formatedDate"
+      dir="ltr"
       :label="placeholder"
       readonly
       clearable
@@ -13,8 +28,8 @@
       @click:clear="clearDate"
       @click.native="dialog = true"
     ></v-text-field>
-    <v-dialog v-model="dialog" width="600">
-      <v-card :dark="dark">
+    <v-dialog v-model="dialog" width="500" persistent>
+      <v-card>
         <v-card-title
           dir="ltr"
           class="headline primary justify-center white--text"
@@ -69,10 +84,9 @@
           </v-col>
         </v-row>
         <!-- time  -->
-
         <v-card-text class="pa-0 ma-0">
           <!-- head  -->
-          <v-simple-table fixed-header class="pa-0 ma-0" :dark="dark">
+          <v-simple-table fixed-header class="pa-0 ma-0">
             <template v-slot:default>
               <thead>
                 <tr>
@@ -81,9 +95,7 @@
                     :key="head.name"
                     class="text-center secondary"
                   >
-                    <span
-                      :class="head.weekend ? 'warning--text' : 'white--text'"
-                    >
+                    <span :class="head.weekend ? 'error--text' : 'white--text'">
                       {{ head.narrow }}
                     </span>
                   </th>
@@ -106,26 +118,14 @@
                   >
                     <v-btn
                       v-show="day"
-                      :icon="$vuetify.breakpoint.mdAndDown"
-                      depressed
-                      :large="$vuetify.breakpoint.mdAndUp"
-                      :class="day.className"
+                      icon
+                      :class="`${day.className} body-1`"
                       :color="day.selected ? 'primary' : ''"
+                      :outlined="day.selected ? true : false"
+                      :disabled="checkForAccept(day.dateStart, day.dateEnd)"
                       @click="setTodayDate(day.date)"
                     >
                       {{ day.dayLocale }}
-                      <template
-                        v-if="$vuetify.breakpoint.mdAndUp"
-                        slot="default"
-                      >
-                        <span
-                          v-for="alt in day.alt"
-                          :key="alt.dayLocale"
-                          class="alties"
-                        >
-                          {{ alt.dayNative }}
-                        </span>
-                      </template>
                     </v-btn>
                   </td>
                 </tr>
@@ -136,110 +136,48 @@
         <v-divider></v-divider>
         <v-row dir="ltr" class="ma-0 pa-0" justify="center" align="center">
           <!-- hours  -->
-          <v-col dir="ltr">
+          <v-col>
             <v-text-field
-              v-model="selectedHour"
-              :reverse="$vuetify.rtl"
-              label="ساعت"
-              :min="0"
-              :max="23"
+              v-model.number="selectedHour"
+              filled
               hide-details
               type="number"
-              outlined
               class="text-h6"
               @input="updateHour"
             ></v-text-field>
           </v-col>
+          :
           <!-- minuts  -->
-          <v-col dir="ltr">
+          <v-col>
             <v-text-field
-              v-model="selectedMinute"
+              v-model.number="selectedMinute"
               class="text-h6"
-              :reverse="$vuetify.rtl"
-              label="دقیقه"
-              :min="0"
-              :max="23"
-              type="number"
+              filled
               hide-details
-              outlined
+              type="number"
+              suffix="′"
               @input="updateMinute"
             ></v-text-field>
           </v-col>
+          :
           <!-- seconds  -->
-          <v-col dir="ltr">
+          <v-col>
             <v-text-field
-              v-model="selectedSecond"
+              v-model.number="selectedSecond"
               class="text-h6"
-              :reverse="$vuetify.rtl"
-              label="ثانیه"
-              min="0"
-              max="59"
-              type="number"
+              filled
               hide-details
-              outlined
+              type="number"
+              suffix="″"
               @input="updateSecond"
             ></v-text-field>
           </v-col>
-          <!-- options -->
-
-          <v-col>
-            <v-checkbox
-              v-model="debug"
-              label="دیباگ"
-              color="red"
-              hide-details
-            ></v-checkbox>
-
-            <!-- <v-menu
-              :open-on-hover="$vuetify.breakpoint.mdAndUp"
-              transition="slide-x-transition"
-              top
-              left
-              :nudge-width="200"
-              offset-x
-            >
-              <template v-slot:activator="{ on, attrs }">
-                <v-btn
-                  fab
-                  outlined
-                  color="indigo"
-                  dark
-                  v-bind="attrs"
-                  v-on="on"
-                >
-                  <v-icon dark>mdi-cog</v-icon>
-                </v-btn>
-              </template>
-              <v-list>
-                <v-list-item link>
-                  <v-list-item-title> نمایش رویداد ها </v-list-item-title>
-                </v-list-item>
-                <v-list-item link>
-                  <v-list-item-title> دیباگ </v-list-item-title>
-                </v-list-item>
-              </v-list>
-            </v-menu> -->
-          </v-col>
         </v-row>
-        <!-- debug mood -->
-        <v-row v-if="debug" class="secondary my-3 ma-0 pa-0">
-          <v-col cols="12" dir="ltr">
-            <span class="white--text"> Timezone: </span>
-            <kbd>
-              {{ timezone }}
-            </kbd>
-          </v-col>
-          <v-col cols="12" dir="ltr">
-            <span class="white--text"> Date: </span>
-            <kbd>
-              {{ processDate.getDate().toString() }}
-            </kbd>
-          </v-col>
-        </v-row>
-        <!-- events -->
         <v-card-actions>
           <v-spacer></v-spacer>
-          <v-btn color="primary" text @click="dialog = false"> ذخیره </v-btn>
+          <v-btn color="error" @click="clearDate()"> لغو </v-btn>
+          <v-btn color="warning" @click="setDate(new Date())"> اکنون </v-btn>
+          <v-btn color="primary" @click="validateDate()"> ذخیره </v-btn>
         </v-card-actions>
       </v-card>
     </v-dialog>
@@ -250,8 +188,31 @@
 import { AasaamDateTime } from '@aasaam/date-time';
 export default {
   name: 'DateTimePicker',
+
+  filters: {
+    formatFilter(value) {
+      if (!value) return '';
+      // const formatInstance = new AasaamDateTime(value, 'fa');
+      // value = value.toString();
+
+      // value = formatInstance.isoFormat('EEEE d MMMM YYYY HH:mm');
+      return value;
+
+      // return value.charAt(0).toUpperCase() + value.slice(1);
+    },
+  },
   props: {
     dateTime: {
+      type: Date,
+      default: undefined,
+      required: false,
+    },
+    min: {
+      type: Date,
+      default: undefined,
+      required: false,
+    },
+    max: {
       type: Date,
       default: undefined,
       required: false,
@@ -276,11 +237,7 @@ export default {
       default: false,
       required: false,
     },
-    dark: {
-      type: Boolean,
-      default: false,
-      required: false,
-    },
+
     format: {
       type: String,
       default: 'YYYY/MM/dd HH:mm',
@@ -291,8 +248,8 @@ export default {
     return {
       processDate: null,
 
+      snackbar: false,
       debug: false,
-      timezone: '',
       formatedDate: '',
       dialog: false,
       yearList: [],
@@ -318,21 +275,16 @@ export default {
   created() {
     this.processDate = new AasaamDateTime(this.dateTime, this.lang);
     this.updateDate();
-    this.timezone = AasaamDateTime.getTimeZone();
   },
   methods: {
     updateDate() {
-      const aa = this.processDate.generateMonthWeekTable([], true);
+      const aa = this.processDate.generateMonthWeekTable([]);
       aa.weeks.forEach((w) => {
         w.map((d) => {
           if (d) {
             let className = '';
             if (d.weekend) {
-              className = 'warning--text';
-            } else if (d.holiday) {
               className = 'error--text';
-            } else if (d.events && d.events.length) {
-              className = 'info--text';
             }
             d.className = className;
           }
@@ -342,15 +294,11 @@ export default {
 
       this.$set(this.dialogDetail, 'generatedTable', aa);
 
-      // this.dialogDetail.generatedTable = this.processDate.generateMonthWeekTable(
-      //   [],
-      //   false,
-      // );
       // console.log(this.processDate.getDate());
 
       this.yearList = this.processDate.generateYearList(undefined, 10);
-
       this.monthList = this.processDate.generateMonthList();
+
       this.yearList.forEach((s) => {
         if (s.selected) {
           this.selectedYear = s.date;
@@ -361,18 +309,46 @@ export default {
           this.selectedMonth = s.date;
         }
       });
+
       this.selectedHour = this.processDate.getDate().getHours();
       this.selectedMinute = this.processDate.getDate().getMinutes();
       this.selectedSecond = this.processDate.getDate().getSeconds();
 
+      this.formatter();
+    },
+    formatter() {
       if (this.dateTime) {
-        this.formatedDate = this.processDate.isoFormat(this.format);
-        // this.dialogDetail.title = this.processDate.isoFormatObject();
         const iso = this.processDate.isoFormatObject();
-        this.dialogDetail.title = `${iso.YYYY}/${iso.MM}/${iso.dd} ${iso.HH}:${iso.mm}`;
+        this.formatedDate = `${iso.YYYY}-${iso.MM}-${iso.dd} ${iso.HH}:${iso.mm}:${iso.ss}`;
+        this.$set(
+          this.dialogDetail,
+          'title',
+          `${iso.YYYY}-${iso.MM}-${iso.dd} ${iso.HH}:${iso.mm}:${iso.ss}`,
+        );
+      } else {
+        this.$set(this.dialogDetail, 'title', 'selectDate');
       }
-      // console.log('addednewtest', this.processDate.date);
-      // this.getDate = this.processDate.date;
+    },
+    validateDate() {
+      // save method
+      // this.dialog = false;
+      if (!(this.min && this.processDate.getDate() > this.min)) {
+        console.log('k');
+        this.snackbar = true;
+      }
+      if (this.max && this.processDate.getDate() < this.max) {
+        console.log('b');
+        // this.snackbar = true;
+      }
+    },
+    checkForAccept(dateStart, dateEnd) {
+      if (this.min && this.min > dateEnd) {
+        return true;
+      }
+      if (this.max && this.max < dateStart) {
+        return true;
+      }
+      return false;
     },
     setDate(date) {
       this.processDate.setDate(date);
@@ -397,6 +373,8 @@ export default {
       this.getDate = null;
       this.formatedDate = '';
       this.dialogDetail.title = '';
+      // this.$set(this.dialogDetail, 'title', '');
+      // this.dialog = false;
     },
     setTodayDate(date) {
       this.setDate(date);
@@ -410,22 +388,5 @@ tbody {
   tr:hover {
     background-color: transparent !important;
   }
-}
-.alties {
-  position: absolute;
-  opacity: 0.5;
-  &:first-child {
-    right: -12px;
-    bottom: -8px;
-    font-size: 9px;
-  }
-  &:nth-child(2) {
-    left: -12px;
-    bottom: -8px;
-    font-size: 9px;
-  }
-}
-.v-select__selections {
-  line-height: 21px !important;
 }
 </style>

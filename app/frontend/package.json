@@ -20,7 +20,7 @@
   },
   "dependencies": {},
   "devDependencies": {
-    "@aasaam/date-time": "0.0.11",
+    "@aasaam/date-time": "0.0.13",
     "@aasaam/information": "^0",
     "@aasaam/noto-font": "^0",
     "@mdi/font": "^5",
