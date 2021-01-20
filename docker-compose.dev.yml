@@ -2,36 +2,38 @@
 version: "3"
 
 services:
-  app-backend:
-    container_name: app-backend-${ASM_PUBLIC_APP_NS:-default}
+  app-dev-backend:
+    container_name: app-backend
     image: node:15-stretch-slim
     working_dir: /app/backend
     ports:
       - ${ASM_APP_PORT:-3001}:${ASM_APP_PORT:-3001}
     volumes:
       - ./app/backend:/app/backend
+      - ./tmp/.npm:/root/.npm
     environment:
       ASM_PUBLIC_APP_TEST: "true"
     command: tail -f /dev/null
 
-  app-frontend:
-    container_name: app-frontend-${ASM_PUBLIC_APP_NS:-default}
+  app-dev-frontend:
+    container_name: app-frontend
     image: node:15-stretch-slim
     working_dir: /app/frontend
     ports:
       - 3000:3000
     volumes:
       - ./app/frontend:/app/frontend
+      - ./tmp/.npm:/root/.npm
     command: tail -f /dev/null
 
-  app-redis:
-    container_name: app-redis-${ASM_PUBLIC_APP_NS:-default}
+  app-dev-redis:
+    container_name: app-redis
     ports:
       - 6379:6379
     image: redis:6
 
-  app-nginx:
-    container_name: app-nginx-${ASM_PUBLIC_APP_NS:-default}
+  app-dev-nginx:
+    container_name: app-nginx
     image: nginx:1
     ports:
       - 80:80
@@ -43,6 +45,7 @@ services:
       ASM_NGINX_ERROR_LOG_LEVEL: ${ASM_NGINX_ERROR_LOG_LEVEL:-warn}
       ASM_NGINX_TMPFS_CACHE_SIZE_MB: ${ASM_NGINX_TMPFS_CACHE_SIZE_MB:-128}
       ASM_APP_PORT: ${ASM_APP_PORT:-3001}
+      ASM_PUBLIC_BACKEND_PREFIX: ${ASM_PUBLIC_BACKEND_PREFIX:-/api}
     tmpfs:
       - /nginx-tmpfs:rw,nodev,nosuid,noexec,noatime,size=${ASM_NGINX_TMPFS_CACHE_SIZE_MB:-192}m
     volumes:

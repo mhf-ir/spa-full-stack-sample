@@ -16,5 +16,17 @@
   </v-app>
 </template>
 <script>
-export default {};
+const rtlLanguages = ['ar', 'dv', 'fa', 'he', 'ps', 'ur', 'yi'];
+export default {
+  head() {
+    const i18nSeo = this.$nuxtI18nSeo();
+    return {
+      htmlAttrs: {
+        dir: rtlLanguages.includes(this.$i18n.locale) ? 'rtl' : 'ltr',
+        lang: this.$i18n.locale,
+        ...i18nSeo.htmlAttrs,
+      },
+    };
+  },
+};
 </script>

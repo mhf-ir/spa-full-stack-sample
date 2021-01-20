@@ -17,7 +17,10 @@ http {
 
   aio threads=default;
   client_body_timeout 15;
-  client_max_body_size 1;
+
+  client_max_body_size 4M;
+  client_body_buffer_size 4M;
+
   directio 1m;
   keepalive_requests 1024;
   keepalive_timeout 30;
@@ -109,27 +112,26 @@ http {
 
   server {
     listen 80 default_server;
-    listen 443 ssl http2 default_server;
 
-    ssl_certificate /cert/fullchan.pem;
-    ssl_certificate_key /cert/privkey.pem;
-    ssl_trusted_certificate /cert/ca.pem;
-    ssl_session_timeout 1d;
-    ssl_session_cache shared:DockerNginx:10m;
-    ssl_session_tickets off;
-    ssl_protocols TLSv1.3;
-    ssl_prefer_server_ciphers off;
+    server_name _;
 
-    server_name localhost *.localhost;
+    root /web-app;
+    index index.html;
+
+    location ~ ^/_nuxt {
+      expires max;
+      add_header Pragma public;
+      add_header Cache-Control "public";
+    }
+
+    location ~ ^/_icons {
+      expires max;
+      add_header Pragma public;
+      add_header Cache-Control "public";
+    }
 
     location / {
-      add_header X-Cache-Status $upstream_cache_status;
-      proxy_read_timeout 8h;
-      proxy_set_header Upgrade $http_upgrade;
-      proxy_set_header Connection 'upgrade';
-      proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
-      proxy_set_header Host $host;
-      proxy_pass http://app-frontend:3000;
+      try_files $uri $uri/ /index.html;
     }
 
     location ~ ^${ASM_PUBLIC_BACKEND_PREFIX} {

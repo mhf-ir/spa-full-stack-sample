@@ -37,7 +37,7 @@ const Fastify = require('./lib/Fastify');
   });
 
   console.log(config.getAll().ASM_APP_PORT);
-  fst.listen(config.getAll().ASM_APP_PORT, (e) => {
+  fst.listen(config.getAll().ASM_APP_PORT, '0.0.0.0', (e) => {
     console.log(e);
   });
 })();
