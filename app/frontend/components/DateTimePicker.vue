@@ -175,7 +175,7 @@
         </v-row>
         <v-card-actions>
           <v-spacer></v-spacer>
-          <v-btn color="error" @click="clearDate()"> لغو </v-btn>
+          <v-btn color="error" @click="scape()"> لغو </v-btn>
           <v-btn color="warning" @click="setDate(new Date())"> اکنون </v-btn>
           <v-btn color="primary" @click="validateDate()"> ذخیره </v-btn>
         </v-card-actions>
@@ -249,7 +249,7 @@ export default {
       processDate: null,
 
       snackbar: false,
-      debug: false,
+
       formatedDate: '',
       dialog: false,
       yearList: [],
@@ -274,6 +274,22 @@ export default {
   },
   created() {
     this.processDate = new AasaamDateTime(this.dateTime, this.lang);
+    // this model show formated date just for first time
+    // if (this.dateTime) {
+    //   const iso = this.processDate.isoFormatObject();
+    //   this.formatedDate = `${iso.YYYY}-${iso.MM}-${iso.dd} ${iso.HH}:${iso.mm}:${iso.ss}`; // test3
+    // }
+    if (this.dateTime) {
+      const iso = this.processDate.isoFormatObject();
+      this.formatedDate = `${iso.YYYY}-${iso.MM}-${iso.dd} ${iso.HH}:${iso.mm}:${iso.ss}`; // test3
+      this.$set(
+        this.dialogDetail,
+        'title',
+        `${iso.YYYY}-${iso.MM}-${iso.dd} ${iso.HH}:${iso.mm}:${iso.ss}`,
+      );
+    } else {
+      this.$set(this.dialogDetail, 'title', 'selectDate');
+    }
     this.updateDate();
   },
   methods: {
@@ -314,12 +330,11 @@ export default {
       this.selectedMinute = this.processDate.getDate().getMinutes();
       this.selectedSecond = this.processDate.getDate().getSeconds();
 
-      this.formatter();
+      this.formatter(this.processDate.getDate());
     },
-    formatter() {
-      if (this.dateTime) {
+    formatter(d) {
+      if (d) {
         const iso = this.processDate.isoFormatObject();
-        this.formatedDate = `${iso.YYYY}-${iso.MM}-${iso.dd} ${iso.HH}:${iso.mm}:${iso.ss}`;
         this.$set(
           this.dialogDetail,
           'title',
@@ -331,15 +346,25 @@ export default {
     },
     validateDate() {
       // save method
+      // console.log(this.getDate());
+      console.log(this.processDate.getDate());
+      // console.log(this.processDate.getDate());
       // this.dialog = false;
-      if (!(this.min && this.processDate.getDate() > this.min)) {
-        console.log('k');
-        this.snackbar = true;
-      }
-      if (this.max && this.processDate.getDate() < this.max) {
-        console.log('b');
-        // this.snackbar = true;
-      }
+      // if (!(this.min && this.processDate.getDate() > this.min)) {
+      //   console.log('k');
+      //   this.snackbar = true;
+      // }
+      // if (this.max && this.processDate.getDate() < this.max) {
+      //   console.log('b');
+      //   // this.snackbar = true;
+      // }
+      // updating everything
+      // 1.update parent
+      this.getDate = this.processDate.getDate();
+      // 2.input update
+      // this.computedFormatter();
+      this.typeFormmater('inputmodel');
+      this.dialog = false;
     },
     checkForAccept(dateStart, dateEnd) {
       if (this.min && this.min > dateEnd) {
@@ -376,9 +401,34 @@ export default {
       // this.$set(this.dialogDetail, 'title', '');
       // this.dialog = false;
     },
+    scape() {
+      this.dialog = false;
+    },
+    typeFormmater(type) {
+      const iso = this.processDate.isoFormatObject();
+      if (type === 'inputmodel') {
+        this.getDate = this.processDate.getDate();
+        this.formatedDate = `${iso.YYYY}-${iso.MM}-${iso.dd} ${iso.HH}:${iso.mm}:${iso.ss}`;
+      } else if (type === 'dialogmodel') {
+        this.$set(
+          this.dialogDetail,
+          'title',
+          `${iso.YYYY}-${iso.MM}-${iso.dd} ${iso.HH}:${iso.mm}:${iso.ss}`,
+        );
+      }
+    },
     setTodayDate(date) {
       this.setDate(date);
-      this.getDate = date;
+      if (this.dateTime === undefined) {
+        this.typeFormmater('dialogmodel');
+        // const iso = this.processDate.isoFormatObject();
+        // this.$set(
+        //   this.dialogDetail,
+        //   'title',
+        //   `${iso.YYYY}-${iso.MM}-${iso.dd} ${iso.HH}:${iso.mm}:${iso.ss}`,
+        // );
+      }
+      // this.getDate = date; //test1
     },
   },
 };
