@@ -2,25 +2,51 @@
 version: "3"
 
 services:
-  rename-me-app:
-    container_name: rename-me-app-${ASM_PUBLIC_APP_NS:-default}
+  app-backend:
+    container_name: app-backend-${ASM_PUBLIC_APP_NS:-default}
     image: node:15-stretch-slim
-    restart: always
+    working_dir: /app/backend
+    ports:
+      - ${ASM_APP_PORT:-3001}:${ASM_APP_PORT:-3001}
     volumes:
-      - ./app:/app
+      - ./app/backend:/app/backend
     environment:
-      ASM_PUBLIC_APP_NS: ${ASM_PUBLIC_APP_NS:-default}
-      ASM_PUBLIC_APP_TEST__TO_BOOLEAN_CAST: ${ASM_PUBLIC_APP_TEST__TO_BOOLEAN_CAST:-""}
-      ASM_PUBLIC_APP_READ_ONLY__TO_BOOLEAN_CAST: ${ASM_PUBLIC_APP_READ_ONLY__TO_BOOLEAN_CAST:-""}
-
-      ASM_PUBLIC_APP_NS: ${APP_PORT:-9000}
-      ASM_APP_TEST_BOOLEAN: 1
+      ASM_PUBLIC_APP_TEST: "true"
     command: tail -f /dev/null
 
-  rename-me-nginx:
-    container_name: rename-me-nginx-${ASM_PUBLIC_APP_NS:-default}
-    image: nginx:1
+  app-frontend:
+    container_name: app-frontend-${ASM_PUBLIC_APP_NS:-default}
+    image: node:15-stretch-slim
+    working_dir: /app/frontend
+    ports:
+      - 3000:3000
     volumes:
-      - ./nginx/templates:/etc/nginx/templates:ro
+      - ./app/frontend:/app/frontend
+    command: tail -f /dev/null
+
+  app-redis:
+    container_name: app-redis-${ASM_PUBLIC_APP_NS:-default}
+    ports:
+      - 6379:6379
+    image: redis:6
+
+  app-nginx:
+    container_name: app-nginx-${ASM_PUBLIC_APP_NS:-default}
+    image: nginx:1
+    ports:
+      - 80:80
+      - 443:443
+    environment:
+      ASM_NGINX_WORKER_PROCESSES: ${ASM_NGINX_WORKER_PROCESSES:-2}
+      ASM_NGINX_WORKER_RLIMIT_NOFILE: ${ASM_NGINX_WORKER_RLIMIT_NOFILE:-1024}
+      ASM_NGINX_WORKER_CONNECTIONS: ${ASM_NGINX_WORKER_CONNECTIONS:-512}
+      ASM_NGINX_ERROR_LOG_LEVEL: ${ASM_NGINX_ERROR_LOG_LEVEL:-warn}
+      ASM_NGINX_TMPFS_CACHE_SIZE_MB: ${ASM_NGINX_TMPFS_CACHE_SIZE_MB:-128}
+      ASM_APP_PORT: ${ASM_APP_PORT:-3001}
+    tmpfs:
+      - /nginx-tmpfs:rw,nodev,nosuid,noexec,noatime,size=${ASM_NGINX_TMPFS_CACHE_SIZE_MB:-192}m
+    volumes:
       - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
       - ./nginx/mime.types:/etc/nginx/mime.types:ro
+      - ./nginx/templates/default.dev.conf.template:/etc/nginx/templates/default.conf.template:ro
+      - ./nginx/cert-local:/cert:ro
