@@ -1,0 +1,37 @@
+# Copyright(c) 2021 aasaam software development group
+version: "3"
+
+services:
+  # backend
+  app-backend:
+    container_name: app-backend-${ASM_PUBLIC_APP_NS:-default}
+    build:
+      context: .
+      dockerfile: Dockerfile.app
+    working_dir: /app/backend
+    environment:
+      ASM_PUBLIC_APP_TEST: "false"
+
+  # front and nginx
+  app-web:
+    container_name: app-web-${ASM_PUBLIC_APP_NS:-default}
+    build:
+      context: .
+      dockerfile: Dockerfile.web
+    ports:
+      - 80:80
+    environment:
+      ASM_NGINX_WORKER_PROCESSES: ${ASM_NGINX_WORKER_PROCESSES:-2}
+      ASM_NGINX_WORKER_RLIMIT_NOFILE: ${ASM_NGINX_WORKER_RLIMIT_NOFILE:-1024}
+      ASM_NGINX_WORKER_CONNECTIONS: ${ASM_NGINX_WORKER_CONNECTIONS:-512}
+      ASM_NGINX_ERROR_LOG_LEVEL: ${ASM_NGINX_ERROR_LOG_LEVEL:-warn}
+      ASM_NGINX_TMPFS_CACHE_SIZE_MB: ${ASM_NGINX_TMPFS_CACHE_SIZE_MB:-128}
+      ASM_APP_PORT: ${ASM_APP_PORT:-3001}
+      ASM_PUBLIC_BACKEND_PREFIX: ${ASM_PUBLIC_BACKEND_PREFIX:-/api}
+    tmpfs:
+      - /nginx-tmpfs:rw,nodev,nosuid,noexec,noatime,size=${ASM_NGINX_TMPFS_CACHE_SIZE_MB:-192}m
+
+  # databases
+  app-redis:
+    container_name: app-redis-${ASM_PUBLIC_APP_NS:-default}
+    image: redis:6

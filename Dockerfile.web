@@ -1,0 +1,25 @@
+# Copyright(c) 2021 aasaam software development group
+FROM node:15-stretch-slim AS frontend
+
+RUN export DEBIAN_FRONTEND=noninteractive ; \
+  export LANG=en_US.utf8 ; \
+  export LC_ALL=C.UTF-8 ; \
+  apt-get update -y \
+  && apt-get -y upgrade && apt-get install -y --no-install-recommends curl build-essential ca-certificates \
+  && echo 'cache = "/tmp/npm"' > /root/.npmrc \
+  && npm -g update \
+  && cd /tmp \
+  && rm -r /var/lib/apt/lists/* && rm -rf /tmp && mkdir /tmp && chmod 777 /tmp && truncate -s 0 /var/log/*.log
+
+ADD app /
+
+RUN cd /app/frontend \
+  && npm install \
+  && npm run make
+
+FROM nginx:1
+
+COPY --from=frontend app/frontend/dist /web-app
+ADD nginx/nginx.conf /etc/nginx/nginx.conf
+ADD nginx/mime.types /etc/nginx/mime.types
+ADD nginx/templates/default.prod.conf.template /etc/nginx/templates/default.conf.template

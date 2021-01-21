@@ -1,5 +1,5 @@
 {
-  "name": "rename-me",
+  "name": "frontend",
   "version": "0.0.0",
   "private": true,
   "scripts": {
@@ -20,7 +20,7 @@
   },
   "dependencies": {},
   "devDependencies": {
-    "@aasaam/date-time": "0.0.13",
+    "@aasaam/date-time": "^0",
     "@aasaam/information": "^0",
     "@aasaam/noto-font": "^0",
     "@mdi/font": "^5",
